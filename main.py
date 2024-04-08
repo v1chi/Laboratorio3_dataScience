@@ -34,35 +34,33 @@ for categoria, promedio in categorias_ordenadas:
     print(f"---{categoria}: {promedio}")
 
 
-"""
-# Definir una función para limpiar la columna 'Aumento Movilización'
+# Definir una función para limpiar los datos de aumento de movilización
 def limpiar_aumento_movilizacion(valor):
+    if isinstance(valor, str):
+        # Eliminar puntos, comas y guiones
+        valor = re.sub(r'\$', '', valor)
+        valor = re.sub(r',', '', valor)
+        valor = re.sub(r'-', '', valor)
+        valor = re.sub(r'\.', '', valor)
+        valor = re.sub(r'[\.,-]', '', valor)
+        # Verificar si el valor contiene solo dígitos después de la limpieza
+        if valor.isdigit():
+            valor = int(valor)
+            if valor <= 1000:
+                return None
+            return valor
+        else:
+            return None
+    return valor
 
-    # Eliminar texto no numérico
-    valor_limpio = re.sub(r'[^\d.,]+', '', valor)
-    # Eliminar punto si no es parte de un número decimal
-    valor_limpio = re.sub(r'\.(?![\d]*\.)', '', valor_limpio)
-    # Eliminar coma si no es parte de un número decimal
-    valor_limpio = re.sub(r',(?![\d]*,)', '', valor_limpio)
-    # Eliminar punto final si no es parte de un número decimal
-    valor_limpio = re.sub(r'\.$', '', valor_limpio)
-    # Eliminar el signo de dólar
-    valor_limpio = re.sub(r'\$', '', valor_limpio)
-    # Convertir a float si es un número válido
-    try:
-        return float(valor_limpio)
-    except ValueError:
-        return None
+# Aplicar la limpieza a la columna correspondiente
+datos['2.1 Aumento Movilización'] = datos['2.1 Aumento Movilización'].apply(limpiar_aumento_movilizacion)
+datos = datos[datos['2.1 Aumento Movilización'] > 1000]
 
-# Eliminar las filas que contienen porcentajes en la columna 'Aumento Movilización'
-datos = datos[~datos['2.1 Aumento Movilización'].astype(str).str.contains('%')]
-
-# Aplicar la función de limpieza a la columna 'Aumento Movilización' sin porcentajes
-datos['Aumento Movilización Limpio'] = datos['2.1 Aumento Movilización'].apply(limpiar_aumento_movilizacion)
+# Eliminar filas con valores nulos (es decir, aquellos que no pudieron ser limpiados a un número entero)
+datos = datos.dropna(subset=['2.1 Aumento Movilización'])
 
 # Guardar los datos limpios en un nuevo archivo Excel
-datos.to_excel("sindicato_limpios.xlsx", index=False)
+archivo_excel_limpios = "Aumento_movilizacion_limpios.xlsx"
+datos.to_excel(archivo_excel_limpios, index=False)
 
-# Mostrar los datos después de la limpieza
-print(datos['Aumento Movilización Limpio'])
-"""
