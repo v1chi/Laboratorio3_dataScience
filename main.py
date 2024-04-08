@@ -1,8 +1,12 @@
 import pandas as pd
 import re
 
+#Abrir excel 
 archivo_excel = "Sindicato_encuestav2.xlsx"
 datos = pd.read_excel(archivo_excel)
+
+
+# Pregunta 1. Priorizar categorias
 
 # Definir las categorías con sus respectivas columnas
 categorias = {
@@ -29,10 +33,12 @@ for categoria, columna in categorias.items():
 categorias_ordenadas = sorted(promedios_categorias.items(), key=lambda x: x[1], reverse=True)
 
 # Mostrar el resultado
-print("Priorización de aspectos relevantes (ordenadas por prioridad descendente):")
+print("Priorización de categorias (ordenadas por prioridad descendente):")
 for categoria, promedio in categorias_ordenadas:
     print(f"---{categoria}: {promedio}")
 
+
+#Punto 2: Calcular aumento movilizacion (limpiando datos y calculando promedio de los datos limpios)
 
 # Definir una función para limpiar los datos de aumento de movilización
 def limpiar_aumento_movilizacion(valor):
@@ -63,4 +69,12 @@ datos = datos.dropna(subset=['2.1 Aumento Movilización'])
 # Guardar los datos limpios en un nuevo archivo Excel
 archivo_excel_limpios = "Aumento_movilizacion_limpios.xlsx"
 datos.to_excel(archivo_excel_limpios, index=False)
+
+# Cargar el archivo Excel limpio en un DataFrame
+datos_limpios = pd.read_excel(archivo_excel_limpios)
+
+# Calcular el promedio de la columna '2.1 Aumento Movilización'
+promedio_aumento_movilizacion = datos_limpios['2.1 Aumento Movilización'].mean()
+
+print("\nEl promedio de aumento de movilización es:", promedio_aumento_movilizacion)
 
