@@ -78,3 +78,72 @@ promedio_aumento_movilizacion = datos_limpios['2.1 Aumento Movilización'].mean(
 
 print("\nEl promedio de aumento de movilización es:", promedio_aumento_movilizacion)
 
+# Pregunta 3: Paso 1=Limpiar columna Aumento Sueldo Base
+
+# Definir una función para limpiar los sueldos bases
+def limpiar_sueldo_base(valor):
+    if isinstance(valor, str):
+        # Eliminar caracteres no numéricos
+        valor = re.sub(r'[^\d]', '', valor)
+        if valor.isdigit():
+            # Convertir a entero
+            valor = int(valor)
+            return valor
+    elif isinstance(valor, (int, float)):
+        # Si el valor ya es un número, dejarlo como está
+        if 1 < valor <= 100:
+            valor /= 100
+            return valor
+        return valor
+    else:
+        return None
+
+# Aplicar la función de limpieza a la columna correspondiente
+datos['1.3 Aumento Sueldo Base'] = datos['1.3 Aumento Sueldo Base'].apply(limpiar_sueldo_base)
+datos = datos[datos['1.3 Aumento Sueldo Base'] <= 1]
+
+# Guardar los sueldos bases limpios en un nuevo archivo Excel
+archivo_excel_sueldos_limpios = "Sueldos_Bases_Limpios.xlsx"
+datos.to_excel(archivo_excel_sueldos_limpios, index=False)
+
+# Pregunta 3: Paso 12=Limpiar columna Sueldo Base 
+
+datos_sueldos_limpios = pd.read_excel(archivo_excel_sueldos_limpios)
+
+# Definir una función para limpiar los sueldos bases
+def limpiar_sueldo_base(valor):
+    if isinstance(valor, str):
+        # Eliminar palabras y caracteres no numéricos excepto '.', '-' y '$'
+        valor = re.sub(r'[^\d.\-$]', '', valor)
+        # Eliminar los puntos, comas, $ y -
+        valor = re.sub(r'[.,$\-$]', '', valor)
+        # Verificar si el valor contiene solo dígitos después de la limpieza
+        if valor.isdigit():
+            return int(valor)
+    elif isinstance(valor, (int, float)):
+        # Si el valor ya es un número, dejarlo como está
+        return int(valor)
+    else:
+        return None
+
+# Aplicar la función de limpieza a la columna correspondiente
+datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'] = datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'].apply(limpiar_sueldo_base)
+
+# Eliminar filas con valores nulos (es decir, aquellos que no pudieron ser limpiados a un número entero)
+datos_sueldos_limpios = datos_sueldos_limpios.dropna(subset=['1.2 Tu  sueldo base actualmente es...'])
+
+# Guardar los sueldos bases limpios en un nuevo archivo Excel
+archivo_excel_sueldos_limpios = "Sueldos_Bases_Limpios_Final.xlsx"
+datos_sueldos_limpios.to_excel(archivo_excel_sueldos_limpios, index=False)
+
+#Calcular promedios de sueldos bases
+promedio_sueldos_bases = datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'].mean()
+promedio_aumento_sueldo_base = datos_sueldos_limpios['1.3 Aumento Sueldo Base'].mean()
+
+#Pregunta 3: AUMENTO SUELDO BASE TOTAL
+aumento_sueldo_total = promedio_aumento_sueldo_base * promedio_sueldos_bases
+print(f"\nAumento sueldo base: ", aumento_sueldo_total)
+
+
+
+
