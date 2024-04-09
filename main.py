@@ -71,11 +71,10 @@ datos_movilizacion = datos_movilizacion[datos_movilizacion['2.1 Aumento Moviliza
 datos_movilizacion = datos_movilizacion.dropna(subset=['2.1 Aumento Movilización'])
 
 # 2.4 Guardar los datos limpios en un nuevo archivo Excel
-archivo_excel_limpios = "Aumento_movilizacion_limpios.xlsx"
-datos_movilizacion.to_excel(archivo_excel_limpios, index=False)
+datos_movilizacion.to_excel("Aumento_movilizacion_limpio.xlsx", index=False)
 
 # 2.5 Cargar el archivo Excel limpio
-datos_movilizacion_limpios = pd.read_excel(archivo_excel_limpios)
+datos_movilizacion_limpios = pd.read_excel("Aumento_movilizacion_limpio.xlsx")
 
 # 2.6 Calcular el promedio de la columna '2.1 Aumento Movilización'
 promedio_aumento_movilizacion = datos_movilizacion_limpios['2.1 Aumento Movilización'].mean()
@@ -137,8 +136,7 @@ datos_sueldos_limpios = datos_sueldos_limpios.dropna(subset=['1.2 Tu  sueldo bas
 datos_sueldos_limpios = datos_sueldos_limpios[datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'] < 50000000]
 
 # 3.7 Guardar los sueldos bases y los aumentos limpios en un nuevo archivo Excel
-archivo_sueldos_limpios = "Sueldos_Bases_Limpios.xlsx"
-datos_sueldos_limpios.to_excel(archivo_sueldos_limpios, index=False)
+datos_sueldos_limpios.to_excel("Sueldos_bases_limpios.xlsx", index=False)
 
 # 3.8 Calcular promedios de sueldo base y aumento de sueldo base
 promedio_sueldo_base = datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'].mean()
@@ -154,9 +152,50 @@ print(f"\nEl monto de aumento sueldo base a considerar es: ", aumento_sueldo_tot
 
 # Pregunta 4: Identifique montos para: • Aguinaldo • Colación • Bono Vacaciones
 
+datos_aguinaldo = datos.copy()
+datos_colacion = datos.copy()
+datos_vacaciones = datos.copy()
+
+# 4.1 Funcion para limpiar datos
+def limpiar_datos(valor):
+    if isinstance(valor, str):
+        # Eliminar puntos, comas y guiones
+        valor = re.sub(r'\$', '', valor)
+        valor = re.sub(r',', '', valor)
+        valor = re.sub(r'-', '', valor)
+        valor = re.sub(r'\.', '', valor)
+        valor = re.sub(r'[\.,-]', '', valor)
+        # Verificar si el valor contiene solo dígitos después de la limpieza
+        if valor.isdigit():
+            valor = int(valor)
+            if valor <= 1000:
+                return None
+            return valor
+        else:
+            return None
+    return valor
+
+# 4.2 Limpiar datos
+datos_aguinaldo["6.1 El aguinaldo de navidad, en que monto debiera quedar"] = datos_aguinaldo["6.1 El aguinaldo de navidad, en que monto debiera quedar"].apply(limpiar_datos)
+datos_colacion["3.1 Aumento Colación"] = datos_colacion["3.1 Aumento Colación"].apply(limpiar_datos)
+datos_vacaciones["9.1 Bono Vacaciones, cuanto debiera ser."] = datos_vacaciones["9.1 Bono Vacaciones, cuanto debiera ser."].apply(limpiar_datos)
+
+datos_aguinaldo = datos_aguinaldo.dropna(subset =["6.1 El aguinaldo de navidad, en que monto debiera quedar"])
+datos_colacion = datos_colacion.dropna(subset =["3.1 Aumento Colación"])
+datos_vacaciones = datos_vacaciones.dropna(subset =["9.1 Bono Vacaciones, cuanto debiera ser."])
+
+# 4.3 Calcular valores para cada punto
+print(f"\nCalculo de aguinaldo:", datos_aguinaldo["6.1 El aguinaldo de navidad, en que monto debiera quedar"].mean())
+print(f"\nCalculo de colacion:", datos_colacion["3.1 Aumento Colación"].mean())
+print(f"\nCalculo de bono de vacaciones:", datos_vacaciones["9.1 Bono Vacaciones, cuanto debiera ser."].mean())
+
+#4.5 Guardar datos limpios en excel
+datos_aguinaldo.to_excel("Aguinaldos_limpio.xlsx", index=False)
+datos_colacion.to_excel("Colacion_limpio.xlsx", index=False)
+datos_vacaciones.to_excel("Vacaciones_limpio.xlsx", index=False)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Pregunta 5:En general, ¿existen diferencias en las respuestas en base a laregión en la que reside la persona?
+# Pregunta 5:En general, ¿existen diferencias en las respuestas en base a la región en la que reside la persona?
 
 
