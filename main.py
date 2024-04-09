@@ -1,14 +1,14 @@
 import pandas as pd
 import re
 
-#Abrir excel 
 archivo_excel = "Sindicato_encuestav2.xlsx"
 datos = pd.read_excel(archivo_excel)
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Pregunta 1. Priorizar categorias
 
-# Definir las categorías con sus respectivas columnas
+# 1.1 Definir las categorías con sus respectivas columnas
 categorias = {
     "Sueldo Base": "1. Sueldo Base",
     "Movilización": "2. Movilización",
@@ -24,23 +24,27 @@ categorias = {
     "Pago de los primeros 3 días en licencia médica": "12. Pago de los primeros 3 días en licencia médica (La primera anual)"
 }
 
-# Calcular el promedio de cada categoría
+# 1.2 Calcular el promedio de cada categoría
 promedios_categorias = {}
 for categoria, columna in categorias.items():
     promedios_categorias[categoria] = datos[columna].mean()
 
-# Ordenar las categorías por prioridad descendente
+# 1.3 Ordenar las categorías por prioridad descendente
 categorias_ordenadas = sorted(promedios_categorias.items(), key=lambda x: x[1], reverse=True)
 
-# Mostrar el resultado
+# 1.4 Mostrar el resultado
 print("Priorización de categorias (ordenadas por prioridad descendente):")
 for categoria, promedio in categorias_ordenadas:
     print(f"---{categoria}: {promedio}")
 
 
-#Punto 2: Calcular aumento movilizacion (limpiando datos y calculando promedio de los datos limpios)
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Definir una función para limpiar los datos de aumento de movilización
+#Pregunta 2: Cuanto considera para aumento movilizacion 
+
+datos_movilizacion = datos.copy()
+
+# 2.1 Función para limpiar los datos de aumento de movilización
 def limpiar_aumento_movilizacion(valor):
     if isinstance(valor, str):
         # Eliminar puntos, comas y guiones
@@ -59,29 +63,32 @@ def limpiar_aumento_movilizacion(valor):
             return None
     return valor
 
-# Aplicar la limpieza a la columna correspondiente
-datos['2.1 Aumento Movilización'] = datos['2.1 Aumento Movilización'].apply(limpiar_aumento_movilizacion)
-datos = datos[datos['2.1 Aumento Movilización'] > 1000]
+# 2.2 Limpiar columna 
+datos_movilizacion['2.1 Aumento Movilización'] = datos_movilizacion['2.1 Aumento Movilización'].apply(limpiar_aumento_movilizacion)
+datos_movilizacion = datos_movilizacion[datos_movilizacion['2.1 Aumento Movilización'] > 1000]
 
-# Eliminar filas con valores nulos (es decir, aquellos que no pudieron ser limpiados a un número entero)
-datos = datos.dropna(subset=['2.1 Aumento Movilización'])
+# 2.3 Eliminar filas con valores nulos 
+datos_movilizacion = datos_movilizacion.dropna(subset=['2.1 Aumento Movilización'])
 
-# Guardar los datos limpios en un nuevo archivo Excel
+# 2.4 Guardar los datos limpios en un nuevo archivo Excel
 archivo_excel_limpios = "Aumento_movilizacion_limpios.xlsx"
-datos.to_excel(archivo_excel_limpios, index=False)
+datos_movilizacion.to_excel(archivo_excel_limpios, index=False)
 
-# Cargar el archivo Excel limpio en un DataFrame
-datos_limpios = pd.read_excel(archivo_excel_limpios)
+# 2.5 Cargar el archivo Excel limpio
+datos_movilizacion_limpios = pd.read_excel(archivo_excel_limpios)
 
-# Calcular el promedio de la columna '2.1 Aumento Movilización'
-promedio_aumento_movilizacion = datos_limpios['2.1 Aumento Movilización'].mean()
+# 2.6 Calcular el promedio de la columna '2.1 Aumento Movilización'
+promedio_aumento_movilizacion = datos_movilizacion_limpios['2.1 Aumento Movilización'].mean()
+print("\nEl monto de aumento de movilización a considerar es:", promedio_aumento_movilizacion)
 
-print("\nEl promedio de aumento de movilización es:", promedio_aumento_movilizacion)
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Pregunta 3: Paso 1=Limpiar columna Aumento Sueldo Base
+# Pregunta 3: Cuanto considera para el aumento sueldo base
 
-# Definir una función para limpiar los sueldos bases
-def limpiar_sueldo_base(valor):
+datos_aumento_sueldo = datos.copy()
+
+# 3.1 Funcion para limpiar columna "Aumento sueldo base" 
+def limpiar_aumento_sueldo_base(valor):
     if isinstance(valor, str):
         # Eliminar caracteres no numéricos
         valor = re.sub(r'[^\d]', '', valor)
@@ -98,19 +105,15 @@ def limpiar_sueldo_base(valor):
     else:
         return None
 
-# Aplicar la función de limpieza a la columna correspondiente
-datos['1.3 Aumento Sueldo Base'] = datos['1.3 Aumento Sueldo Base'].apply(limpiar_sueldo_base)
-datos = datos[datos['1.3 Aumento Sueldo Base'] <= 1]
+# 3.2 Limpiar columna (como estamos trabajando con porcentajes, hay que filtrar los valores menores/iguales a 1 ej: 10% es 0,10 y 100% es 1)
+datos_aumento_sueldo['1.3 Aumento Sueldo Base'] = datos_aumento_sueldo['1.3 Aumento Sueldo Base'].apply(limpiar_aumento_sueldo_base)
+datos_aumento_sueldo = datos_aumento_sueldo[datos_aumento_sueldo['1.3 Aumento Sueldo Base'] <= 1]
+datos_aumento_sueldo = datos_aumento_sueldo.dropna(subset=['1.3 Aumento Sueldo Base'])
 
-# Guardar los sueldos bases limpios en un nuevo archivo Excel
-archivo_excel_sueldos_limpios = "Sueldos_Bases_Limpios.xlsx"
-datos.to_excel(archivo_excel_sueldos_limpios, index=False)
+# 3.3 Limpiar sueldos bases (para asi poder calcular el promedio de sueldo base)
+datos_sueldos_limpios = datos_aumento_sueldo
 
-# Pregunta 3: Paso 12=Limpiar columna Sueldo Base 
-
-datos_sueldos_limpios = pd.read_excel(archivo_excel_sueldos_limpios)
-
-# Definir una función para limpiar los sueldos bases
+# 3.4 Funcion para limpiar sueldos bases
 def limpiar_sueldo_base(valor):
     if isinstance(valor, str):
         # Eliminar palabras y caracteres no numéricos excepto '.', '-' y '$'
@@ -126,24 +129,34 @@ def limpiar_sueldo_base(valor):
     else:
         return None
 
-# Aplicar la función de limpieza a la columna correspondiente
+# 3.5 Limpiar sueldos bases
 datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'] = datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'].apply(limpiar_sueldo_base)
 
-# Eliminar filas con valores nulos (es decir, aquellos que no pudieron ser limpiados a un número entero)
+# 3.6 Eliminar filas con valores nulos, tambien se filtra por los menores a 50 millones ya que habian outliers que impedian sacar una media representativa de los sueldos
 datos_sueldos_limpios = datos_sueldos_limpios.dropna(subset=['1.2 Tu  sueldo base actualmente es...'])
+datos_sueldos_limpios = datos_sueldos_limpios[datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'] < 50000000]
 
-# Guardar los sueldos bases limpios en un nuevo archivo Excel
-archivo_excel_sueldos_limpios = "Sueldos_Bases_Limpios_Final.xlsx"
-datos_sueldos_limpios.to_excel(archivo_excel_sueldos_limpios, index=False)
+# 3.7 Guardar los sueldos bases y los aumentos limpios en un nuevo archivo Excel
+archivo_sueldos_limpios = "Sueldos_Bases_Limpios.xlsx"
+datos_sueldos_limpios.to_excel(archivo_sueldos_limpios, index=False)
 
-#Calcular promedios de sueldos bases
-promedio_sueldos_bases = datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'].mean()
+# 3.8 Calcular promedios de sueldo base y aumento de sueldo base
+promedio_sueldo_base = datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'].mean()
 promedio_aumento_sueldo_base = datos_sueldos_limpios['1.3 Aumento Sueldo Base'].mean()
 
-#Pregunta 3: AUMENTO SUELDO BASE TOTAL
-aumento_sueldo_total = promedio_aumento_sueldo_base * promedio_sueldos_bases
-print(f"\nAumento sueldo base: ", aumento_sueldo_total)
+
+# 3.9 Calcular promedio de aumento de sueldo base nuevo, multiplicando el sueldo base promedio por el aumento de sueldo base promedio
+aumento_sueldo_total = promedio_aumento_sueldo_base * promedio_sueldo_base
+print(f"\nEl monto de aumento sueldo base a considerar es: ", aumento_sueldo_total)
 
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Pregunta 4: Identifique montos para: • Aguinaldo • Colación • Bono Vacaciones
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Pregunta 5:En general, ¿existen diferencias en las respuestas en base a laregión en la que reside la persona?
 
 
