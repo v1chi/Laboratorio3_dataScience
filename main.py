@@ -21,7 +21,7 @@ categorias = {
     "Bono Vacaciones": "9. Bono Vacaciones",
     "Permiso Administrativo": "10. Permiso Administrativo",
     "Préstamo Vacaciones": "11. Préstamo Vacaciones",
-    "Pago de los primeros 3 días en licencia médica": "12. Pago de los primeros 3 días en licencia médica (La primera anual)"
+    "Pago de los primeros 3 días en licencia médica": "12. Pago de los primeros 3 días en licencia médica (La primera anual)",
 }
 
 # 1.2 Calcular el promedio de cada categoría
@@ -196,6 +196,48 @@ datos_vacaciones.to_excel("Vacaciones_limpio.xlsx", index=False)
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Pregunta 5:En general, ¿existen diferencias en las respuestas en base a la región en la que reside la persona?
+# Pregunta 5: En general, ¿existen diferencias en las respuestas en base a la región en la que reside la persona?
 
+#5.1 Definir el diccionario con las regiones de Chile
+regiones_chile = {
+    "Ñuble": ["ÑUBLE", "NUBLE", "XVI", "16"],
+    "Arica y Parinacota": ["ARICA", "XV", "15"],
+    "Los Ríos": ["LOSRÍOS", "LOSRIOS", "RIOS", "XIV", "14"],
+    "Metropolitana de Santiago": ["SANTIAGO", "RM", "METROPOLITANA", "METRO", "XIII", "13"],
+    "Magallanes y de la Antártica Chilena": ["MAGALLANES", "XII", "12"],
+    "Aysén del General Carlos Ibáñez del Campo": ["AYSEN", "AYSÉN", "XI", "11"],
+    "Los Lagos": ["LOSLAGOS", "LAGOS", "X", "10"],
+    "La Araucanía": ["ARAUCANÍA", "ARAUCANIA", "IX", "9"],
+    "Biobío": ["BIOBÍO", "BIOBIO", "VIII", "8"],
+    "Maule": ["MAULE", "VII", "7"],
+    "Libertador General Bernardo O'Higgins": ["LIBERTADOR", "OHIGGINS", "VI", "6"],
+    "Valparaíso": ["VALPARAÍSO", "VALPARAISO", "V", "5"],
+    "Coquimbo": ["COQUIMBO", "IV", "4"],
+    "Atacama": ["ATACAMA", "III", "LLL", "|||", "III", "3"],
+    "Antofagasta": ["ANTOFAGASTA", "II", "LL", "||", "II", "2"],
+    "Tarapacá": ["TARAPACÁ", "TARAPACA", "I", "L", "|", "I", "1"],
+}
 
+datos_region = datos.copy()
+
+# 5.2 Funcion para limpiar datos
+def limpiar_datos_region(valor):
+    if isinstance(valor, int):
+       valor = str(valor)
+    if isinstance(valor, str):
+        valor = valor.upper()
+        # Eliminar puntos, comas, comilla simple y guiones
+        valor = re.sub(r'[\.'',-]', '', valor)
+        valor = re.sub(r'[^ITX]I[^IV]', '', valor)
+        # Verificar si el valor esta contenido en el diccionario
+        for region, nombres_posibles in regiones_chile.items():
+            for nombre_posible in nombres_posibles:
+                if str(nombre_posible) in valor:
+                    return region
+    return None
+
+#5.3 Limpiar datos
+datos_region["REGIÓN"] = datos_region["REGIÓN"].apply(limpiar_datos_region) 
+
+#5.4 Guardar datos limpios en excel
+datos_region.to_excel("Region_limpio.xlsx", index=False)
