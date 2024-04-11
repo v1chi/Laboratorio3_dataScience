@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+import matplotlib.pyplot as plt
 
 archivo_excel = "Sindicato_encuestav2.xlsx"
 datos = pd.read_excel(archivo_excel)
@@ -127,7 +128,7 @@ def limpiar_sueldo_base(valor):
         return int(valor)
     else:
         return None
-
+'''
 # 3.5 Limpiar sueldos bases
 datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'] = datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'].apply(limpiar_sueldo_base)
 
@@ -138,14 +139,14 @@ datos_sueldos_limpios = datos_sueldos_limpios[datos_sueldos_limpios['1.2 Tu  sue
 # 3.7 Guardar los sueldos bases y los aumentos limpios en un nuevo archivo Excel
 datos_sueldos_limpios.to_excel("Sueldos_bases_limpios.xlsx", index=False)
 
+'''
+
 # 3.8 Calcular promedios de sueldo base y aumento de sueldo base
-promedio_sueldo_base = datos_sueldos_limpios['1.2 Tu  sueldo base actualmente es...'].mean()
 promedio_aumento_sueldo_base = datos_sueldos_limpios['1.3 Aumento Sueldo Base'].mean()
 
 
 # 3.9 Calcular promedio de aumento de sueldo base nuevo, multiplicando el sueldo base promedio por el aumento de sueldo base promedio
-aumento_sueldo_total = promedio_aumento_sueldo_base * promedio_sueldo_base
-print(f"\nEl monto de aumento sueldo base a considerar es: ", aumento_sueldo_total)
+print(f"\nEl porcentaje de aumento sueldo base a considerar es: ", str(promedio_aumento_sueldo_base * 100) + "%")
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -200,25 +201,23 @@ datos_vacaciones.to_excel("Vacaciones_limpio.xlsx", index=False)
 
 #5.1 Definir el diccionario con las regiones de Chile
 regiones_chile = {
-    "Ñuble": ["ÑUBLE", "NUBLE", "XVI", "16"],
-    "Arica y Parinacota": ["ARICA", "XV", "15"],
-    "Los Ríos": ["LOSRÍOS", "LOSRIOS", "RIOS", "XIV", "14"],
-    "Metropolitana de Santiago": ["SANTIAGO", "RM", "METROPOLITANA", "METRO", "XIII", "13"],
-    "Magallanes y de la Antártica Chilena": ["MAGALLANES", "XII", "12"],
-    "Aysén del General Carlos Ibáñez del Campo": ["AYSEN", "AYSÉN", "XI", "11"],
-    "Los Lagos": ["LOSLAGOS", "LAGOS", "X", "10"],
-    "La Araucanía": ["ARAUCANÍA", "ARAUCANIA", "IX", "9"],
-    "Biobío": ["BIOBÍO", "BIOBIO", "VIII", "8"],
-    "Maule": ["MAULE", "VII", "7"],
-    "Libertador General Bernardo O'Higgins": ["LIBERTADOR", "OHIGGINS", "VI", "6"],
-    "Valparaíso": ["VALPARAÍSO", "VALPARAISO", "V", "5"],
-    "Coquimbo": ["COQUIMBO", "IV", "4"],
-    "Atacama": ["ATACAMA", "III", "LLL", "|||", "III", "3"],
-    "Antofagasta": ["ANTOFAGASTA", "II", "LL", "||", "II", "2"],
-    "Tarapacá": ["TARAPACÁ", "TARAPACA", "I", "L", "|", "I", "1"],
+    "j. Ñuble": ["ÑUBLE", "NUBLE", "XVI", "16"],
+    "a. Arica y Parinacota": ["ARICA", "XV", "15"],
+    "m. Los Ríos": ["LOSRÍOS", "LOSRIOS", "RIOS", "XIV", "14"],
+    "g. Metropolitana de Santiago": ["SANTIAGO", "RM", "METROPOLITANA", "METRO", "XIII", "13"],
+    "p. Magallanes y de la Antártica Chilena": ["MAGALLANES", "XII", "12"],
+    "o. Aysén del General Carlos Ibáñez del Campo": ["AYSEN", "AYSÉN", "XI", "11"],
+    "n. Los Lagos": ["LOSLAGOS", "LAGOS", "X", "10"],
+    "l. La Araucanía": ["ARAUCANÍA", "ARAUCANIA", "IX", "9"],
+    "k. Biobío": ["BIOBÍO", "BIOBIO", "VIII", "8"],
+    "i. Maule": ["MAULE", "VII", "7"],
+    "h. Libertador General Bernardo O'Higgins": ["LIBERTADOR", "OHIGGINS", "VI", "6"],
+    "f. Valparaíso": ["VALPARAÍSO", "VALPARAISO", "V", "5"],
+    "e. Coquimbo": ["COQUIMBO", "IV", "4"],
+    "d. Atacama": ["ATACAMA", "III", "LLL", "|||", "III", "3"],
+    "c. Antofagasta": ["ANTOFAGASTA", "II", "LL", "||", "II", "2"],
+    "b. Tarapacá": ["TARAPACÁ", "TARAPACA", "I", "L", "|", "I", "1"]
 }
-
-datos_region = datos.copy()
 
 # 5.2 Funcion para limpiar datos
 def limpiar_datos_region(valor):
@@ -236,8 +235,97 @@ def limpiar_datos_region(valor):
                     return region
     return None
 
-#5.3 Limpiar datos
-datos_region["REGIÓN"] = datos_region["REGIÓN"].apply(limpiar_datos_region) 
+archivo_excel_sueldos_bases_limpios = "Sueldos_Bases_Limpios.xlsx"
+datos_sueldos = pd.read_excel(archivo_excel_sueldos_bases_limpios)
+datos_region = datos_sueldos.copy()
 
-#5.4 Guardar datos limpios en excel
-datos_region.to_excel("Region_limpio.xlsx", index=False)
+#5.3 Limpiar datos
+datos_region["REGIÓN"] = datos_region["REGIÓN"].apply(limpiar_datos_region)
+datos_region = datos_region.dropna(subset =["REGIÓN"])
+
+# 5.4: Calcular la media del aumento de sueldo base por región
+media_aumento_sueldo_por_region = datos_region.groupby('REGIÓN')['1.3 Aumento Sueldo Base'].mean().reset_index()
+media_aumento_sueldo_por_region['1.3 Aumento Sueldo Base'] *= 100
+
+# 5.5 Graficar las medias del aumento de sueldo base por región
+plt.figure(figsize=(10, 6))
+plt.bar(media_aumento_sueldo_por_region['REGIÓN'], media_aumento_sueldo_por_region['1.3 Aumento Sueldo Base'], color='skyblue')
+plt.xlabel('Región')
+plt.ylabel('Media del Aumento de Sueldo Base (%)')
+plt.title('Comparación de Medias del Aumento de Sueldo Base por Región')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+
+# 5.6 Se repite lo mismo para los otros gráficos
+archivo_excel_aguinaldos_limpios = "Aguinaldos_limpio.xlsx"
+datos_aguinaldos = pd.read_excel(archivo_excel_aguinaldos_limpios)
+datos_region = datos_aguinaldos.copy()
+
+datos_region["REGIÓN"] = datos_region["REGIÓN"].apply(limpiar_datos_region)
+datos_region = datos_region.dropna(subset =["REGIÓN"])
+
+media_aguinaldos = datos_region.groupby('REGIÓN')['6.1 El aguinaldo de navidad, en que monto debiera quedar'].mean().reset_index()
+
+plt.figure(figsize=(10, 6))
+plt.bar(media_aguinaldos['REGIÓN'], media_aguinaldos['6.1 El aguinaldo de navidad, en que monto debiera quedar'], color='lightgreen')
+plt.xlabel('Región')
+plt.ylabel('Media del Aumento de Aguinaldo ($)')
+plt.title('Comparación de Medias del Aumento de Aguinaldo por Región')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+
+archivo_excel_movilizacion_limpios = "Aumento_movilizacion_limpio.xlsx"
+datos_movilizacion = pd.read_excel(archivo_excel_movilizacion_limpios)
+datos_region = datos_movilizacion.copy()
+
+datos_region["REGIÓN"] = datos_region["REGIÓN"].apply(limpiar_datos_region)
+datos_region = datos_region.dropna(subset =["REGIÓN"])
+
+media_movilizacion= datos_region.groupby('REGIÓN')['2.1 Aumento Movilización'].mean().reset_index()
+
+plt.figure(figsize=(10, 6))
+plt.bar(media_movilizacion['REGIÓN'], media_movilizacion['2.1 Aumento Movilización'], color='pink')
+plt.xlabel('Región')
+plt.ylabel('Media del Aumento de Movilidad ($)')
+plt.title('Comparación de Medias del Aumento de Movilidad por Región')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+
+archivo_excel_colacion_limpios = "Colacion_limpio.xlsx"
+datos_colacion = pd.read_excel(archivo_excel_colacion_limpios)
+datos_region = datos_colacion.copy()
+
+datos_region["REGIÓN"] = datos_region["REGIÓN"].apply(limpiar_datos_region)
+datos_region = datos_region.dropna(subset =["REGIÓN"])
+
+media_colacion = datos_region.groupby('REGIÓN')['3.1 Aumento Colación'].mean().reset_index()
+
+plt.figure(figsize=(10, 6))
+plt.bar(media_colacion['REGIÓN'], media_colacion['3.1 Aumento Colación'], color='blue')
+plt.xlabel('Región')
+plt.ylabel('Media del Aumento de Colación ($)')
+plt.title('Comparación de Medias del Aumento de Colación por Región')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+
+archivo_excel_vacaciones_limpios = "Vacaciones_limpio.xlsx"
+datos_vacaciones = pd.read_excel(archivo_excel_vacaciones_limpios)
+datos_region = datos_vacaciones.copy()
+
+datos_region["REGIÓN"] = datos_region["REGIÓN"].apply(limpiar_datos_region)
+datos_region = datos_region.dropna(subset =["REGIÓN"])
+
+media_vacaciones = datos_region.groupby('REGIÓN')['9.1 Bono Vacaciones, cuanto debiera ser.'].mean().reset_index()
+
+plt.figure(figsize=(10, 6))
+plt.bar(media_vacaciones['REGIÓN'], media_vacaciones['9.1 Bono Vacaciones, cuanto debiera ser.'], color='magenta')
+plt.xlabel('Región')
+plt.ylabel('Media del Aumento de Bono Vacaciones ($)')
+plt.title('Comparación de Medias del Aumento de Bono Vacaciones por Región')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
