@@ -20,9 +20,9 @@ categorias = {
     "Regalo Navidad Hijo Trabajadores": "7. Regalo Navidad Hijo Trabajadores",
     "Beneficio Permanencia por años de Servicio": "8. Beneficio Permanencia por años de Servicio",
     "Bono Vacaciones": "9. Bono Vacaciones",
-    "Permiso Administrativo": "10. Permiso Administrativo",
     "Préstamo Vacaciones": "11. Préstamo Vacaciones",
     "Pago de los primeros 3 días en licencia médica": "12. Pago de los primeros 3 días en licencia médica (La primera anual)",
+    "Permiso Administrativo": "10. Permiso Administrativo",
 }
 
 # 1.2 Calcular el promedio de cada categoría
